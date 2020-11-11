@@ -1,0 +1,19 @@
+SELECT a.myv_van_id,
+CASE WHEN a.myv_van_id IN (SELECT myv_van_id FROM my_state_van.contacts_contacts_myv WHERE contact_type_id IN ('36')) THEN 'door knocked - paid' 
+WHEN a.myv_van_id IN (SELECT myv_van_id FROM my_state_van.contacts_contacts_myv WHERE contact_type_id IN ('139', '141', '145', '2')) THEN 'door knocked - volunteer'
+WHEN a.myv_van_id IN (SELECT myv_van_id FROM my_state_van.contacts_contacts_myv WHERE contact_type_id IN ('130')) THEN 'lit dropped'
+ELSE 'unattempted' END AS contact_type,
+voting_address_latitude,
+voting_address_longitude,
+CASE WHEN d.date_early_voted > 2020-09-15 THEN 'early voted'
+ELSE contact_type END AS current_status,
+CASE WHEN current_status = 'early voted' THEN 2
+ELSE 1 END AS emphasis
+
+FROM states_nv_universes.nv_paid_canvass_universe a
+LEFT JOIN my_state.person b USING (person_id)
+LEFT JOIN my_state.all_scores c USING (person_id)
+LEFT JOIN my_state_van.contacts_absentees d ON a.myv_van_id = d.myv_van_id
+
+WHERE  b.county_name = 'Clark'
+AND c.bfp_gotv_hh_score > 0
