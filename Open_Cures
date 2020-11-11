@@ -1,0 +1,16 @@
+select
+count (distinct r.national_myv_van_id),
+q.county_name
+
+from my_state_van.coord20_myv_001_responses r
+left join my_state_coordinated_van_raw.contacts_absentees a using (national_myv_van_id)
+left join my_state.all_scores s using (person_id)
+left join my_state.person q using (person_id)
+where r.state_code = 'NV'
+and r.survey_question_id IN ('425385')
+AND r.survey_response_id IN ('1737183','1737184','1737185','1737185','1737185')
+AND r.survey_response_id NOT IN ('1742386','1737237','1758605','1757478')
+and r.sq_most_recent_response = 1
+and a.date_early_voted is null
+and s.bfp_support_score_targeting >=.4
+group by 2
