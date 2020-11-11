@@ -1,0 +1,160 @@
+select 
+count(case when door_knocked > 0 then myv_van_id end) as door_knocked
+,count(case when door_knocked = 0 then myv_van_id end) as unattempted
+,count(case when canvassed > 0 then myv_van_id end) as canvassed
+,count(case when canvassed = 0 then myv_van_id end) as uncanvassed
+,'Door Knock Universe' as universe
+,'since 10/02' as starting_date
+,county_name
+,CASE
+	WHEN county_name in ('Douglas') THEN 'Rural Ballot Group 1 - GOTV'
+    WHEN county_name in ('Churchill','Elko','Esmeralda','Lander','Lincoln','Lyon','Pershing','Storey') THEN 'Rural Ballot Group 2 - GOTV'
+    WHEN county_name in ('Eureka','Mineral') THEN 'Rural Ballot Group 3 - GOTV'
+    WHEN county_name in ('Humboldt','Nye','White Pine') THEN 'Rural Ballot Group 4 - GOTV'
+    WHEN county_name in ('Carson City') THEN 'Rural Ballot Group 5 - GOTV'
+    WHEN county_name in ('Clark') THEN 'Clark County - GOTV'
+    WHEN county_name in ('Washoe') THEN 'Washoe County - GOTV'
+    ELSE 'Other'
+    END as ballot_group
+from
+(
+select 
+ls.myv_van_id, p.county_name, sum(coalesce(door_knocked,0)) as door_knocked, sum(coalesce(canvassed,0)) as canvassed from states_nv_universes.nv_paid_canvass_universe ls
+left join
+(
+ select distinct 
+     myv_van_id
+     ,SUBSTRING(CONVERT_TIMEZONE('EDT',datetime_canvassed) ,1,10) as attempt_date
+     ,count(case when contact_type_id in ('139', '141', '130', '36', '145', '2') then contact_type_id end) as door_knocked
+     ,count(case when result_id = '14' then result_id end) as canvassed
+     from my_state_van.contacts_contacts_myv
+     where contact_type_id IN ('2')
+     and SUBSTRING(CONVERT_TIMEZONE('EDT',datetime_canvassed) ,1,10) >= '2020-10-02'
+      group by 1,2
+  ) c
+  on ls.myv_van_id = c.myv_van_id
+  
+  
+ left join my_state.person_phone_derived ppd on ls.myv_van_id = ppd.myv_van_id
+  
+ left join 
+  (select county_name, myv_van_id
+  from my_state.person) p 
+  on ls.myv_van_id = p.myv_van_id
+
+  
+group by 1,2
+  
+  )
+group by 6,7
+  
+
+UNION
+
+
+    select 
+count(case when door_knocked > 0 then myv_van_id end) as door_knocked
+,count(case when door_knocked = 0 then myv_van_id end) as unattempted
+,count(case when canvassed > 0 then myv_van_id end) as canvassed
+,count(case when canvassed = 0 then myv_van_id end) as uncanvassed
+,'Door Knock Universe' as universe
+,'since 10/09' as starting_date
+,county_name
+,CASE
+	WHEN county_name in ('Douglas') THEN 'Rural Ballot Group 1 - GOTV'
+    WHEN county_name in ('Churchill','Elko','Esmeralda','Lander','Lincoln','Lyon','Pershing','Storey') THEN 'Rural Ballot Group 2 - GOTV'
+    WHEN county_name in ('Eureka','Mineral') THEN 'Rural Ballot Group 3 - GOTV'
+    WHEN county_name in ('Humboldt','Nye','White Pine') THEN 'Rural Ballot Group 4 - GOTV'
+    WHEN county_name in ('Carson City') THEN 'Rural Ballot Group 5 - GOTV'
+    WHEN county_name in ('Clark') THEN 'Clark County - GOTV'
+    WHEN county_name in ('Washoe') THEN 'Washoe County - GOTV'
+    ELSE 'Other'
+    END as ballot_group
+from
+(
+select 
+ls.myv_van_id, p.county_name, sum(coalesce(door_knocked,0)) as door_knocked, sum(coalesce(canvassed,0)) as canvassed from states_nv_universes.nv_paid_canvass_universe ls
+left join
+(
+ select distinct 
+     myv_van_id
+     ,SUBSTRING(CONVERT_TIMEZONE('EDT',datetime_canvassed) ,1,10) as attempt_date
+     ,count(case when contact_type_id in ('139', '141', '130', '36', '145', '2') then contact_type_id end) as door_knocked
+     ,count(case when result_id = '14' then result_id end) as canvassed
+     from my_state_van.contacts_contacts_myv
+     where contact_type_id IN ('2')
+     and SUBSTRING(CONVERT_TIMEZONE('EDT',datetime_canvassed) ,1,10) >= '2020-10-09'
+      group by 1,2
+  ) c
+  on ls.myv_van_id = c.myv_van_id
+  
+  
+ left join my_state.person_phone_derived ppd on ls.myv_van_id = ppd.myv_van_id
+  
+ left join 
+  (select county_name, myv_van_id
+  from my_state.person) p 
+  on ls.myv_van_id = p.myv_van_id
+
+  
+group by 1,2
+  
+  )
+group by 6,7
+  
+  
+UNION
+
+
+    select 
+count(case when door_knocked > 0 then myv_van_id end) as door_knocked
+,count(case when door_knocked = 0 then myv_van_id end) as unattempted
+,count(case when canvassed > 0 then myv_van_id end) as canvassed
+,count(case when canvassed = 0 then myv_van_id end) as uncanvassed
+,'Door Knock Universe' as universe
+,'since 10/16' as starting_date
+,county_name
+,CASE
+	WHEN county_name in ('Douglas') THEN 'Rural Ballot Group 1 - GOTV'
+    WHEN county_name in ('Churchill','Elko','Esmeralda','Lander','Lincoln','Lyon','Pershing','Storey') THEN 'Rural Ballot Group 2 - GOTV'
+    WHEN county_name in ('Eureka','Mineral') THEN 'Rural Ballot Group 3 - GOTV'
+    WHEN county_name in ('Humboldt','Nye','White Pine') THEN 'Rural Ballot Group 4 - GOTV'
+    WHEN county_name in ('Carson City') THEN 'Rural Ballot Group 5 - GOTV'
+    WHEN county_name in ('Clark') THEN 'Clark County - GOTV'
+    WHEN county_name in ('Washoe') THEN 'Washoe County - GOTV'
+    ELSE 'Other'
+    END as ballot_group
+from
+(
+select 
+ls.myv_van_id, p.county_name, sum(coalesce(door_knocked,0)) as door_knocked, sum(coalesce(canvassed,0)) as canvassed from states_nv_universes.nv_paid_canvass_universe ls
+left join
+(
+ select distinct 
+     myv_van_id
+     ,SUBSTRING(CONVERT_TIMEZONE('EDT',datetime_canvassed) ,1,10) as attempt_date
+     ,count(case when contact_type_id in ('139', '141', '130', '36', '145', '2') then contact_type_id end) as door_knocked
+     ,count(case when result_id = '14' then result_id end) as canvassed
+     from my_state_van.contacts_contacts_myv
+     where contact_type_id IN ('2')
+     and SUBSTRING(CONVERT_TIMEZONE('EDT',datetime_canvassed) ,1,10) >= '2020-10-16'
+      group by 1,2
+  ) c
+  on ls.myv_van_id = c.myv_van_id
+  
+  
+ left join my_state.person_phone_derived ppd on ls.myv_van_id = ppd.myv_van_id
+  
+ left join 
+  (select county_name, myv_van_id
+  from my_state.person) p 
+  on ls.myv_van_id = p.myv_van_id
+
+  
+group by 1,2
+  
+  )
+group by 6,7
+  
+
+  order by starting_date
