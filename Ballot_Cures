@@ -1,0 +1,489 @@
+SELECT
+SUM(g.all_votes) AS all_votes,
+SUM(g.returned_ballots) AS returned_ballots,
+g.county,
+g.biden_support_score,
+SUM(g.rejected_ballots) AS rejected_ballots,
+SUM(g.surrendered_ballots) AS surrendered_ballots,
+SUM(g.open_cures) AS open_cures,
+SUM(g.rejected_ballots) - SUM(g.open_cures) AS cured_ballots
+
+FROM
+
+(
+
+SELECT 
+COUNT(c.date_early_voted) AS all_votes,
+COUNT(c.date_ballot_received) AS returned_ballots,
+county,
+'0-40' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+FROM (SELECT
+	DISTINCT a.myv_van_id,
+    a.date_early_voted,
+    a.date_ballot_received,
+    b.county_name AS county
+      
+FROM my_state_van.contacts_absentees a
+
+LEFT JOIN my_state.person b USING (myv_van_id)
+left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting <=.4
+      
+)c
+      
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+b.county_name AS county,
+'0-40' AS biden_support_score,
+COUNT(DISTINCT b.myv_van_id) AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+FROM my_state_van.coord20_myv_001_responses a
+
+LEFT JOIN my_state.person b USING (person_id, myv_van_id)
+LEFT JOIN my_state_van.contacts_absentees c USING (myv_van_id)
+left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting <=.4
+AND a.survey_question_id IN ('425385')
+AND a.survey_response_id IN ('1737184','1737183')
+AND b.state_code = 'NV'
+
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+county,
+'0-40' AS biden_support_score,
+'0' AS rejected_ballots,
+sum(c.surrendered_ballots) AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+
+FROM (SELECT
+      a.myv_van_id,
+      d.county_name AS county,
+	  CASE WHEN b.ballot_return_status_id IN ('50') THEN '1' ELSE '0' END AS surrendered_ballots
+      
+FROM my_state_van.contacts_absentees a
+
+      LEFT JOIN my_state_van.contacts_absentees b USING (myv_van_id)
+      LEFT JOIN my_state.person d USING (myv_van_id)
+      left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting <=.4
+
+)c
+
+GROUP BY 3
+  
+UNION
+  
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+county,
+'0-40' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+COUNT(DISTINCT c.cured_ballots) AS cured_ballots,
+'0' AS open_cures
+
+
+FROM (SELECT
+      a.myv_van_id,
+      d.county_name AS county,
+	  CASE WHEN  e.survey_response_id IN ('1737184','1737183') AND d.state_code = 'NV' AND a.date_early_voted > '2020-09-01'THEN a.myv_van_id ELSE NULL END AS cured_ballots
+      
+FROM my_state_van.contacts_absentees a
+
+      LEFT JOIN my_state_van.coord20_myv_001_responses e USING (myv_van_id)
+      LEFT JOIN my_state.person d USING (person_id, myv_van_id)
+      left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting <=.4
+)c
+
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+q.county_name AS county,
+'0-40' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+count (distinct r.national_myv_van_id) AS open_cures
+
+
+FROM my_state_van.coord20_myv_001_responses r
+left join my_state_coordinated_van_raw.contacts_absentees a using (national_myv_van_id)
+left join my_state.all_scores s using (person_id)
+left join my_state.person q using (person_id)
+  
+where r.state_code = 'NV'
+and r.survey_question_id IN ('425385')
+AND r.survey_response_id IN ('1737183','1737184','1737185')
+AND r.survey_response_id NOT IN ('1742386','1737237','1758605','1757478')
+and r.sq_most_recent_response = 1
+and a.date_early_voted is null
+AND q.county_name IS NOT NULL
+and s.bfp_support_score_targeting <=.4
+
+
+GROUP BY 3
+
+) g
+WHERE county IS NOT NULL
+GROUP BY 3,4
+
+
+
+UNION
+
+
+
+SELECT
+SUM(g.all_votes) AS all_votes,
+SUM(g.returned_ballots) AS returned_ballots,
+g.county,
+g.biden_support_score,
+SUM(g.rejected_ballots) AS rejected_ballots,
+SUM(g.surrendered_ballots) AS surrendered_ballots,
+SUM(g.open_cures) AS open_cures,
+SUM(g.rejected_ballots) - SUM(g.open_cures) AS cured_ballots
+
+FROM
+
+(
+
+SELECT 
+COUNT(c.date_early_voted) AS all_votes,
+COUNT(c.date_ballot_received) AS returned_ballots,
+county,
+'40-70' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+FROM (SELECT
+	DISTINCT a.myv_van_id,
+    a.date_early_voted,
+    a.date_ballot_received,
+    b.county_name AS county
+      
+FROM my_state_van.contacts_absentees a
+
+LEFT JOIN my_state.person b USING (myv_van_id)
+left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting BETWEEN .4 AND .7
+      
+)c
+      
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+b.county_name AS county,
+'40-70' AS biden_support_score,
+COUNT(DISTINCT b.myv_van_id) AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+FROM my_state_van.coord20_myv_001_responses a
+
+LEFT JOIN my_state.person b USING (person_id, myv_van_id)
+LEFT JOIN my_state_van.contacts_absentees c USING (myv_van_id)
+left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting BETWEEN .4 AND .7
+AND a.survey_question_id IN ('425385')
+AND a.survey_response_id IN ('1737184','1737183')
+AND b.state_code = 'NV'
+
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+county,
+'40-70' AS biden_support_score,
+'0' AS rejected_ballots,
+sum(c.surrendered_ballots) AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+
+FROM (SELECT
+      a.myv_van_id,
+      d.county_name AS county,
+	  CASE WHEN b.ballot_return_status_id IN ('50') THEN '1' ELSE '0' END AS surrendered_ballots
+      
+FROM my_state_van.contacts_absentees a
+
+      LEFT JOIN my_state_van.contacts_absentees b USING (myv_van_id)
+      LEFT JOIN my_state.person d USING (myv_van_id)
+      left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting BETWEEN .4 AND .7
+
+)c
+
+GROUP BY 3
+  
+UNION
+  
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+county,
+'40-70' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+COUNT(DISTINCT c.cured_ballots) AS cured_ballots,
+'0' AS open_cures
+
+
+FROM (SELECT
+      a.myv_van_id,
+      d.county_name AS county,
+	  CASE WHEN  e.survey_response_id IN ('1737184','1737183') AND d.state_code = 'NV' AND a.date_early_voted > '2020-09-01'THEN a.myv_van_id ELSE NULL END AS cured_ballots
+      
+FROM my_state_van.contacts_absentees a
+
+      LEFT JOIN my_state_van.coord20_myv_001_responses e USING (myv_van_id)
+      LEFT JOIN my_state.person d USING (person_id, myv_van_id)
+      left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting BETWEEN .4 AND .7
+)c
+
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+q.county_name AS county,
+'40-70' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+count (distinct r.national_myv_van_id) AS open_cures
+
+
+FROM my_state_van.coord20_myv_001_responses r
+left join my_state_coordinated_van_raw.contacts_absentees a using (national_myv_van_id)
+left join my_state.all_scores s using (person_id)
+left join my_state.person q using (person_id)
+  
+where r.state_code = 'NV'
+and r.survey_question_id IN ('425385')
+AND r.survey_response_id IN ('1737183','1737184')
+AND r.survey_response_id NOT IN ('1742386','1737237','1758605','1757478')
+and r.sq_most_recent_response = 1
+and a.date_early_voted is null
+AND q.county_name IS NOT NULL
+and s.bfp_support_score_targeting BETWEEN .4 AND .7
+
+
+GROUP BY 3
+
+) g
+WHERE county IS NOT NULL
+GROUP BY 3,4
+
+
+
+UNION
+
+
+
+
+SELECT
+SUM(g.all_votes) AS all_votes,
+SUM(g.returned_ballots) AS returned_ballots,
+g.county,
+g.biden_support_score,
+SUM(g.rejected_ballots) AS rejected_ballots,
+SUM(g.surrendered_ballots) AS surrendered_ballots,
+SUM(g.open_cures) AS open_cures,
+SUM(g.rejected_ballots) - SUM(g.open_cures) AS cured_ballots
+
+FROM
+
+(
+
+SELECT 
+COUNT(c.date_early_voted) AS all_votes,
+COUNT(c.date_ballot_received) AS returned_ballots,
+county,
+'70-100' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+FROM (SELECT
+	DISTINCT a.myv_van_id,
+    a.date_early_voted,
+    a.date_ballot_received,
+    b.county_name AS county
+      
+FROM my_state_van.contacts_absentees a
+
+LEFT JOIN my_state.person b USING (myv_van_id)
+left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting >=.7
+      
+)c
+      
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+b.county_name AS county,
+'70-100' AS biden_support_score,
+COUNT(DISTINCT b.myv_van_id) AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+FROM my_state_van.coord20_myv_001_responses a
+
+LEFT JOIN my_state.person b USING (person_id, myv_van_id)
+LEFT JOIN my_state_van.contacts_absentees c USING (myv_van_id)
+left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting >= .7
+AND a.survey_question_id IN ('425385')
+AND a.survey_response_id IN ('1737184','1737183')
+AND b.state_code = 'NV'
+
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+county,
+'70-100' AS biden_support_score,
+'0' AS rejected_ballots,
+sum(c.surrendered_ballots) AS surrendered_ballots,
+'0' AS cured_ballots,
+'0' AS open_cures
+
+
+FROM (SELECT
+      a.myv_van_id,
+      d.county_name AS county,
+	  CASE WHEN b.ballot_return_status_id IN ('50') THEN '1' ELSE '0' END AS surrendered_ballots
+      
+FROM my_state_van.contacts_absentees a
+
+      LEFT JOIN my_state_van.contacts_absentees b USING (myv_van_id)
+      LEFT JOIN my_state.person d USING (myv_van_id)
+      left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting >= .7
+
+)c
+
+GROUP BY 3
+  
+UNION
+  
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+county,
+'70-100' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+COUNT(DISTINCT c.cured_ballots) AS cured_ballots,
+'0' AS open_cures
+
+
+FROM (SELECT
+      a.myv_van_id,
+      d.county_name AS county,
+	  CASE WHEN  e.survey_response_id IN ('1737184','1737183') AND d.state_code = 'NV' AND a.date_early_voted > '2020-09-01'THEN a.myv_van_id ELSE NULL END AS cured_ballots
+      
+FROM my_state_van.contacts_absentees a
+
+      LEFT JOIN my_state_van.coord20_myv_001_responses e USING (myv_van_id)
+      LEFT JOIN my_state.person d USING (person_id, myv_van_id)
+      left join my_state.all_scores s using (person_id)
+      
+WHERE s.bfp_support_score_targeting >= .7
+)c
+
+GROUP BY 3
+
+UNION
+
+SELECT
+'0' AS all_votes,
+'0' AS returned_ballots,
+q.county_name AS county,
+'70-100' AS biden_support_score,
+'0' AS rejected_ballots,
+'0' AS surrendered_ballots,
+'0' AS cured_ballots,
+count (distinct r.national_myv_van_id) AS open_cures
+
+
+FROM my_state_van.coord20_myv_001_responses r
+left join my_state_coordinated_van_raw.contacts_absentees a using (national_myv_van_id)
+left join my_state.all_scores s using (person_id)
+left join my_state.person q using (person_id)
+  
+where r.state_code = 'NV'
+and r.survey_question_id IN ('425385')
+AND r.survey_response_id IN ('1737183','1737184')
+AND r.survey_response_id NOT IN ('1742386','1737237','1758605','1757478')
+and r.sq_most_recent_response = 1
+and a.date_early_voted is null
+AND q.county_name IS NOT NULL
+and s.bfp_support_score_targeting >= .7
+
+
+GROUP BY 3
+
+) g
+WHERE county IS NOT NULL
+GROUP BY 3,4
