@@ -1,0 +1,23 @@
+SELECT 
+COUNT(DISTINCT c.person_id) as Count_of_IDs, c.county_name, 
+CASE WHEN a.survey_question_id = '425385' THEN 'NV SQ'
+ELSE ' ' END AS SQ_Source
+
+FROM my_state_coordinated_van_raw.contacts_survey_responses_myv a
+LEFT JOIN my_state_coordinated_van_raw.survey_responses b USING (survey_response_id)
+LEFT JOIN my_state.person c USING (myv_van_id)
+LEFT JOIN my_state_van.contacts_absentees d USING (myv_van_id)
+LEFT JOIN my_state.all_scores e USING (person_id)
+
+WHERE a.survey_question_id IN ('425385')
+AND a.survey_response_id IN ('1737183','1737184','1737185')
+AND d.date_early_voted IS NULL
+AND c.state_code = 'NV'
+GROUP BY 2,3
+
+UNION
+
+SELECT
+count_of_ids, county_name, sq_source 
+FROM states_nv_scratch.sos_rej_data
+WHERE date_posted = '2020-11-04'
