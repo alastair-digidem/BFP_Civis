@@ -1,0 +1,33 @@
+SELECT state_code
+,fips_code	
+,reporting_unit_name
+,reporting_unit_id
+,level
+,office
+,office_id	
+,district_number		A
+,precincts_reporting	
+,precincts_total		
+,precinct_reporting_pct		
+,candidate_name	
+,candidate_party	
+,candidate_id	
+,votes	
+,avotes	
+,c.county_name 
+,c.county_fips_code
+,c.int_point_lat 
+,c.int_point_lon
+,DATETIME(last_updated,"America/Los_Angeles") as updated_hour
+,CASE WHEN a.candidate_name = 'Biden, Joe' THEN avotes + votes
+  ELSE null END as biden_votes
+,CASE WHEN a.candidate_name = 'Trump, Donald' THEN avotes + votes
+  ELSE null END as trump_votes
+,CASE WHEN a.office = 'President' THEN (avotes+votes)
+	ELSE null END all_votes
+
+FROM demscoord20.enight_data.enight_ap_data a
+LEFT JOIN bigquery-public-data.geo_us_boundaries.counties c
+ON c.county_fips_code = a.fips_code
+
+WHERE a.state_code= 'NV' AND (a.office='President' and a.fips_code IS NOT NULL)
