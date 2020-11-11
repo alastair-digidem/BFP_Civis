@@ -1,0 +1,27 @@
+SELECT b.reporting_unit_name AS county, 
+sum(b.total_votes) AS total_votes,
+SUM(b.biden_votes) AS biden_votes,
+SUM(b.trump_votes) AS trump_votes,
+SUM(b.jorgensen_votes) AS jorgensen_votes,
+SUM(b.blankenship_votes) AS blankenship_votes,
+SUM(b.none_of_these_votes) AS none_of_these_fools_votes
+
+FROM
+(SELECT 
+a.reporting_unit_name, 
+CASE WHEN a.candidate_name = 'Biden, Joe' THEN a.votes ELSE 0 END AS biden_votes,
+CASE WHEN a.candidate_name = 'Trump, Donald' THEN a.votes ELSE 0 END AS trump_votes,
+ CASE WHEN a.candidate_name = 'Jorgensen, Jo' THEN a.votes ELSE 0 END AS jorgensen_votes,
+ CASE WHEN a.candidate_name = 'Blankenship, Don' THEN a.votes ELSE 0 END AS blankenship_votes,
+ CASE WHEN a.candidate_name = 'None of these candidates, None' THEN a.votes ELSE 0 END AS none_of_these_votes,
+CASE WHEN a.candidate_name IS NOT NULL THEN a.votes ELSE 0 END AS total_votes
+
+FROM my_state.enight_ap_data a
+
+WHERE a.office_id = 'P'
+AND a.reporting_unit_name IS NOT NULL
+AND a.state_code = 'NV'
+) b
+
+GROUP BY 1
+ORDER BY 1 ASC
