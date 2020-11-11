@@ -1,0 +1,47 @@
+( select 
+a.myv_van_id, b.outvote_contact_id, a.state_code, a.first_name, a.last_name, a.age_vf, a.gender_combined, a.ethnicity_combined, a.county_name, a.voting_zip, a.media_market, a.voting_address_type, a.is_deceased, 'Recipient' as user_type,
+CASE 
+WHEN a.age_vf > 0 AND a.age_vf < 20 THEN '18-20'
+WHEN a.age_vf >= 20 AND a.age_vf < 30 THEN '20-29'
+WHEN a.age_vf >= 30 AND a.age_vf < 40 THEN '30-39'
+WHEN a.age_vf >= 40 AND a.age_vf < 50 THEN '40-49'
+WHEN a.age_vf >= 50 AND a.age_vf < 60 THEN '50-59'
+WHEN a.age_vf >= 60 AND a.age_vf < 70 THEN '60-69'
+ELSE '70+'
+END as age_group,
+c.tag_name
+ 
+FROM my_state.person a
+LEFT JOIN states_shared_pipeline.coord_outvote_001_person b
+ON a.myv_van_id = b.contact_van_id
+LEFT JOIN states_shared_pipeline.coord_outvote_001_taggings c
+ON b.outvote_contact_id = c.outvote_contact_id
+ 
+
+WHERE c.tag_name IS NOT NULL
+ORDER BY 1 DESC )
+
+
+UNION
+
+
+( select 
+a.myv_van_id, 'sender' as outvote_contact_id, a.state_code, a.first_name, a.last_name, a.age_vf, a.gender_combined, a.ethnicity_combined, a.county_name, a.voting_zip, a.media_market, a.voting_address_type, a.is_deceased,'App User' as user_type,
+CASE 
+WHEN a.age_vf > 0 AND a.age_vf < 20 THEN '18-20'
+WHEN a.age_vf >= 20 AND a.age_vf < 30 THEN '20-29'
+WHEN a.age_vf >= 30 AND a.age_vf < 40 THEN '30-39'
+WHEN a.age_vf >= 40 AND a.age_vf < 50 THEN '40-49'
+WHEN a.age_vf >= 50 AND a.age_vf < 60 THEN '50-59'
+WHEN a.age_vf >= 60 AND a.age_vf < 70 THEN '60-69'
+ELSE '70+'
+END as age_group,
+'sender' as tag_name
+ 
+FROM my_state.person a
+LEFT JOIN my_state_van.person_records_myc b
+ON a.myv_van_id = b.myv_van_id
+LEFT JOIN states_shared_pipeline.coord_outvote_001_users_myc_xwalk c
+ON b.myc_van_id = c.myc_van_id
+WHERE c.state_code = 'NV'
+ORDER BY 1 DESC )
